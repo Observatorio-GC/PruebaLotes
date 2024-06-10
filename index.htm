@@ -1,0 +1,244 @@
+﻿<!DOCTYPE html>
+<html  lang = "es">
+
+<head>
+<meta charset=utf-8 />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="description"
+	content="Visor del Observatorio Territorial Godoy Cruz, el cual permite la visualización de información geográfica del municipio. Oficina de Planificación Urbana">
+<meta name="keywords"
+	content="Godoy Cruz, Planificación Urbana, Secretaria de Ambiente y Desarrollo Sustentable, Visor, Observatorio Territorial">
+<meta name="author" content="Ignacio Diaz - Fernando Cruceño">
+<meta name="copyright" content="Observatorio Territorial Godoy Cruz">
+<title>Observatorio Territorial de Godoy Cruz</title>
+
+
+<link rel="shortcut icon" type="image/x-icon" href="./img/favicon1.png">
+
+   <!-- Load Leaflet from CDN-->
+   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+   <!-- Load Esri Leaflet from CDN -->
+   <script src="https://unpkg.com/esri-leaflet"></script>
+
+   <!-- Esri Leaflet Geocoder -->
+   <link rel="stylesheet" href="https://unpkg.com/esri-leaflet-geocoder/dist/esri-leaflet-geocoder.css"/>
+   <script src="https://unpkg.com/esri-leaflet-geocoder"></script>
+
+<!-- CSS -->
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/Leaflet.PolylineMeasure.css">
+<link rel="stylesheet" href="css/Leaflet.StreetViewButtons.css">
+<link rel="stylesheet" href="css/Leaflet.StreetView1Buttons.css">
+<link rel="stylesheet" href="css/leaflet.groupedlayercontrol.min.css">
+<link rel="stylesheet" href="css/Control.Coordinates.css">
+<link rel="stylesheet" href="css/L.Control.MousePosition.css">
+
+<!-- SCRIPTS -->
+<script src="https://unpkg.com/togeojson@0.16.0"></script>
+<script src="scripts/Leaflet.PolylineMeasure.js"></script>
+<script src="scripts/StreetViewButtons.js"></script>
+<script src="scripts/StreetView1Buttons.js"></script>
+<script src="scripts/leaflet.pattern.js"></script>
+<script src="scripts/leaflet-tilelayer-wmts.js"></script>
+<script src="scripts/leaflet.groupedlayercontrol.min.js"></script>
+<script src="scripts/leaflet.browser.print.js"></script>
+<script src="scripts/leaflet.filelayer.js"></script>
+<script src="scripts/Control.Coordinates.js"></script>
+<script src="scripts/L.Control.MousePosition.js"></script>
+<script src="scripts/jquery-3.7.0.js"></script>
+<script src="scripts/jquery-3.7.0.min.map"></script>
+<script src="js/popups.js"></script>
+<script src="js/iconos.js"></script>
+
+<!-- GEOJSON -->
+<script type="text/javascript" src="scripts/godoycruz.js"></script>
+<script type="text/javascript" src="scripts/Precios.js"></script>
+<script type="text/javascript" src="scripts/precio1500.js"></script>
+<script type="text/javascript" src="scripts/precio10222.js"></script>
+<script type="text/javascript" src="scripts/precio18944.js"></script>
+<script type="text/javascript" src="scripts/precio27667.js"></script>
+<script type="text/javascript" src="scripts/precio36389.js"></script>
+<script type="text/javascript" src="scripts/precio45111.js"></script>
+<script type="text/javascript" src="scripts/precio53833.js"></script>
+<script type="text/javascript" src="scripts/precio62556.js"></script>
+<script type="text/javascript" src="scripts/precio71278.js"></script>
+<script type="text/javascript" src="scripts/DistritosDepartamentales.js"></script>
+<script type="text/javascript" src="scripts/EspaciosVerdes.js"></script>
+<script type="text/javascript" src="scripts/BarriosConsolidados.js"></script>
+<script type="text/javascript" src="scripts/BarriosPopulares.js"></script>
+<script type="text/javascript" src="scripts/CicloviasExistentes.js"></script>
+<script type="text/javascript" src="scripts/LotePrueba.js"></script>
+
+
+</head>
+<header>
+	<style>
+		.leaflet-container {
+			display: flex;
+			font-family: 'Lucida Sans', 'Lucida Sans Regular', 'Lucida Grande', 'Lucida Sans Unicode', Geneva, Verdana, sans-serif;
+			font-size: 11px;
+		}
+
+		.leaflet-control-attribution.leaflet-control {
+			font-family: 'Playfair Display', serif;
+			font-size: 12px;
+		}
+
+		.leaflet-control-attribution.leaflet-control a:hover {
+			color: #800080;
+		}
+	</style>
+
+	<h1>Mapa de Inversiones - Godoy Cruz</h1>
+	<!-- <img src="img/favicon.png" class="logogc"> -->
+	<div id="map"></div>
+
+</header>
+
+<body>
+	<!-- FUNCIONES LEAFLET -->
+	<script>
+		/* ARGENMAP */
+		 var mapabase_argenmap = new L.TileLayer.WMTS('https://wms.ign.gob.ar/geoserver/capabaseargenmap/gwc/service/wmts?', {
+			layer: 'capabaseargenmap',
+			style: "normal",
+			tilematrixSet: "EPSG:3857",
+			format: "image/png",
+			attribution: " <a href='https://www.ign.gob.ar/AreaServicios/Argenmap/IntroduccionV2'> IGN - Argenmap v2 </a> | <a href='https://www.godoycruz.gob.ar/'>Secretaria de Ambiente y Desarrollo Sustentable - Godoy Cruz</a> | <a href='https://github.com/mylen/leaflet.TileLayer.WMTS'>GitHub</a>&copy "
+		}); 
+
+
+		/* BASE LAYERS */
+		 var esriUrl = 'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+			esriAttrib = "Powered by <a href='https://www.esri.com/en-us/home'> &copyESRI </a> | <a href='https://www.godoycruz.gob.ar/'>Secretaría de Ambiente, Obras y Servicios Públicos - Godoy Cruz</a>",
+			mapabase_esri = L.tileLayer(esriUrl, {
+				maxZoom: 20,
+				attribution: esriAttrib
+			});
+
+		var osmUrl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+			osmAttrib = '&copy; <a href="http://openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+			mapabase_osm = L.tileLayer(osmUrl, {
+				maxZoom: 20,
+				attribution: osmAttrib
+			});
+
+		var otUrl = 'https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png',
+			otAttrib =
+			'Map data: &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors, <a href="http://viewfinderpanoramas.org">SRTM</a> | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)',
+			mapabase_ot = L.tileLayer(otUrl, {
+				maxZoom: 20,
+				attribution: otAttrib
+			});
+
+		var googleSatelite = 'http://www.google.cn/maps/vt?lyrs=s@189&gl=cn&x={x}&y={y}&z={z}',
+		    googleSateliteAttrib =
+			"Powered by &copyGoogle" ,
+			mapabase_googleSatelite = L.tileLayer(googleSatelite, {
+				maxZoom: 20,
+				attribution: googleSateliteAttrib
+			}); 
+
+	
+/* OVERLAYS Y GRUPOS */
+ 	var plazagc = L.marker([-32.92524, -68.84439]).bindPopup('Plaza GC.').openPopup(),
+		godoycruz = L.geoJson(godoycruz),
+		Depa = L.geoJson(DistritosDepartamentales, {onEachFeature: agregarPopupDistritosDepartamentales}),
+		espverdes = L.geoJson(EspaciosVerdes, {
+				onEachFeature: agregarPopupespaciosverdes
+			}).setStyle({
+				color: "#4daf4a",
+				fillOpacity: 0.75
+			}),
+		barriospopulares = L.geoJson(BarriosPopulares, {
+				onEachFeature: agregarPopupbarrios
+			}).setStyle({
+				color: "#f2d119",
+				fillOpacity: 0.75
+			}),
+		BarriosConsolidados = L.geoJson(BarriosConsolidados, {
+				onEachFeature: agregarPopupBarriosConsolidados
+			}),
+			
+		Lote = L.geoJson(LotePrueba, {
+				onEachFeature: agregarPopuplote
+		     }),
+
+		cicloviasexist = L.geoJson(CicloviasExistentes, {
+				onEachFeature: agregarPopupciclovias
+			}).setStyle({
+				color: "red"
+			}),	
+		precio1500 = L.geoJson(precio1500, { onEachFeature: agregarPopupPrecios }).setStyle({ color: "#2b83ba", fillOpacity: 0.75 }),
+		precio10222 = L.geoJson(precio10222, { onEachFeature: agregarPopupPrecios }).setStyle({ color: "#6bb0af", fillOpacity: 0.75 }),
+		precio18944 = L.geoJson(precio18944, { onEachFeature: agregarPopupPrecios }).setStyle({ color: "#abdda4", fillOpacity: 0.75 }),
+		precio27667 = L.geoJson(precio27667, { onEachFeature: agregarPopupPrecios }).setStyle({ color: "#d5eeb2", fillOpacity: 0.75 }),
+		precio36389 = L.geoJson(precio36389, { onEachFeature: agregarPopupPrecios }).setStyle({ color: "#ffffbf", fillOpacity: 0.75 }),
+		precio45111 = L.geoJson(precio45111, { onEachFeature: agregarPopupPrecios }).setStyle({ color: "#e69689", fillOpacity: 0.75 }),
+		precio53833 = L.geoJson(precio53833, { onEachFeature: agregarPopupPrecios }).setStyle({ color: "#fdae61", fillOpacity: 0.75 }),
+		precio62556 = L.geoJson(precio62556, { onEachFeature: agregarPopupPrecios }).setStyle({ color: "#ea633e", fillOpacity: 0.75 }),
+		precio71278 = L.geoJson(precio71278, { onEachFeature: agregarPopupPrecios }).setStyle({ color: "#d7191c", fillOpacity: 0.75 });
+		
+	 
+/* CREACIÓN DEL MAPA CON BASE LAYERS Y OVERLAYS */
+      var map = L.map("map", { dragging: !L.Browser.mobile, tap: !L.Browser.mobile,
+			layers: [mapabase_esri, Lote]
+		}).setView([-32.9201, -68.8448 ], 18);
+
+		
+		/* setView([-32.9337,-68.8978 ], 13); */
+
+    
+/* FUNCIONES DE ESTILO DE OVERLAYS */
+    estiloDistritosDepartamentales(); 	
+		
+
+/* CREACIÓN DEL LAYERS CONTROL */
+	var baseMaps = {
+		"OpenStreetMap": mapabase_osm,
+		"Argenmap": mapabase_argenmap,
+		"Google Satelital": mapabase_googleSatelite,
+		"ESRI Satelital": mapabase_esri, 
+	}; 
+
+ var groupedOverlays = {
+		/* "Street View": {
+				"Marcador": marker,
+			}, */
+
+		"Capas Generales":{
+			/* "Barrios Consolidados": BarriosConsolidados,
+			"Barrios Populares": barriospopulares,
+			"Ciclovías Existentes": cicloviasexist,
+			"Distritos": Depa,
+			"Espacio Verdes": espverdes, */
+			"Lote": Lote,
+		},
+
+		/* "Valor del Suelo": {
+			" De 17 - 117 (usd/m2)": precio1500,
+			" De 118 - 211 (usd/m2)": precio10222,
+			" De 212 - 316 (usd/m2)": precio18944,
+			" De 317 - 421 (usd/m2)": precio27667,
+			" De 422 - 468 (usd/m2)": precio36389,
+			" De 469 - 574 (usd/m2)": precio45111,
+			" De 575 - 673 (usd/m2)": precio53833,
+			" De 674 - 819 (usd/m2)": precio62556,
+			" De 820 - 936 (usd/m2)": precio71278,
+		}, */
+	};
+	var opciones_groupedlayers = {
+		groupCheckboxes: false
+	};
+
+	L.control.mousePosition().addTo(map);
+</script>
+	
+ 	<script src="js/funcionesMapa.js"></script> 
+</body>
+	
+</html>
+
+      
